@@ -1,6 +1,12 @@
 <template>
     <div v-loading="loading">
-        <el-drawer v-model="drawerVisible" :destroy-on-close="true" :close-on-click-modal="false" size="50%">
+        <el-drawer
+            v-model="drawerVisible"
+            :destroy-on-close="true"
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
+            size="50%"
+        >
             <template #header>
                 <DrawerHeader :header="title + $t('setting.backupAccount')" :back="handleClose" />
             </template>
@@ -11,7 +17,7 @@
                             <el-tag>{{ $t('setting.' + dialogData.rowData!.type) }}</el-tag>
                         </el-form-item>
                         <el-form-item
-                            :label="$t('setting.currentPath')"
+                            :label="$t('setting.backupDir')"
                             prop="varsJson['dir']"
                             :rules="Rules.requiredInput"
                         >

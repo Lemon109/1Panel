@@ -8,8 +8,8 @@
         <el-form ref="deleteForm" v-loading="loading">
             <el-form-item>
                 <el-radio-group v-model="withTagAll">
-                    <el-radio :label="false">{{ $t('container.imagePruneSome') }}</el-radio>
-                    <el-radio :label="true">{{ $t('container.imagePruneAll') }}</el-radio>
+                    <el-radio :value="false">{{ $t('container.imagePruneSome') }}</el-radio>
+                    <el-radio :value="true">{{ $t('container.imagePruneAll') }}</el-radio>
                 </el-radio-group>
             </el-form-item>
             <span v-if="withTagAll">
@@ -22,14 +22,17 @@
             </span>
             <div v-if="!withTagAll">
                 <ul v-for="(item, index) in unTagList" :key="index">
-                    <li>
-                        {{ item.tags[0] || '< none >' }}
+                    <li v-if="item.tags && item.tags[0]">
+                        {{ item.tags[0] }}
+                    </li>
+                    <li v-else>
+                        {{ item.id.replaceAll('sha256:', '').substring(0, 12) }}
                     </li>
                 </ul>
             </div>
             <div v-else>
                 <ul v-for="(item, index) in unUsedList" :key="index">
-                    <li v-if="item.tags">{{ item.tags.join(', ') }}</li>
+                    <li v-if="item.tags && item.tags[0]">{{ item.tags.join(', ') }}</li>
                     <li v-else>{{ item.id.replaceAll('sha256:', '').substring(0, 12) }}</li>
                 </ul>
             </div>

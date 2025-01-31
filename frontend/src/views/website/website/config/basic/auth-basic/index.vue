@@ -5,7 +5,7 @@
     <ComplexTable :data="data" @search="search" v-loading="loading">
         <template #toolbar>
             <el-button type="primary" plain @click="openCreate">
-                {{ $t('commons.button.create') + $t('website.basicAuth') }}
+                {{ $t('commons.button.create') }}
             </el-button>
         </template>
         <el-table-column :label="$t('commons.login.username')" prop="username"></el-table-column>
@@ -26,7 +26,6 @@
 
 <script lang="ts" setup name="proxy">
 import { Website } from '@/api/interface/website';
-import OpDialog from '@/components/del-dialog/index.vue';
 import { OperateAuthConfig, GetAuthConfig } from '@/api/modules/website';
 import { computed, onMounted, ref } from 'vue';
 import i18n from '@/lang';

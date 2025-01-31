@@ -1,6 +1,12 @@
 <template>
     <div>
-        <el-drawer v-model="drawerVisible" :destroy-on-close="true" :close-on-click-modal="false" size="50%">
+        <el-drawer
+            v-model="drawerVisible"
+            :destroy-on-close="true"
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
+            size="50%"
+        >
             <template #header>
                 <DrawerHeader header="DNS" :back="handleClose" />
             </template>
@@ -14,8 +20,8 @@
                         type="warning"
                     />
                     <el-radio-group v-model="confShowType" @change="changeMode">
-                        <el-radio-button label="form">{{ $t('database.baseConf') }}</el-radio-button>
-                        <el-radio-button label="all">{{ $t('database.allConf') }}</el-radio-button>
+                        <el-radio-button value="form">{{ $t('database.baseConf') }}</el-radio-button>
+                        <el-radio-button value="all">{{ $t('database.allConf') }}</el-radio-button>
                     </el-radio-group>
                     <el-form
                         class="mt-4"

@@ -5,9 +5,9 @@
             <el-button type="primary" class="bt" link @click="goSetting">【 {{ $t('container.setting') }} 】</el-button>
             <span>{{ $t('container.startIn') }}</span>
         </el-card>
-        <LayoutContent :title="$t('container.container')" :class="{ mask: dockerStatus != 'Running' }">
+        <LayoutContent :title="$t('container.container', 2)" :class="{ mask: dockerStatus != 'Running' }">
             <template #rightButton>
-                <div class="flex justify-end">
+                <div class="flex justify-end flex-col sm:flex-row">
                     <div class="mr-10">
                         <el-checkbox v-model="includeAppStore" @change="search()">
                             {{ $t('container.includeAppstore') }}
@@ -22,15 +22,16 @@
                 </div>
             </template>
             <template #toolbar>
-                <el-row>
-                    <el-col :xs="24" :sm="16" :md="16" :lg="16" :xl="16">
+                <div class="flex w-full flex-col gap-4 md:justify-between md:flex-row">
+                    <div class="flex flex-wrap gap-4">
                         <el-button type="primary" @click="onOpenDialog('create')">
                             {{ $t('container.create') }}
                         </el-button>
                         <el-button type="primary" plain @click="onClean()">
                             {{ $t('container.containerPrune') }}
                         </el-button>
-                        <el-button-group class="ml-4">
+
+                        <el-button-group>
                             <el-button :disabled="checkStatus('start', null)" @click="onOperate('start', null)">
                                 {{ $t('container.start') }}
                             </el-button>
@@ -53,25 +54,15 @@
                                 {{ $t('container.remove') }}
                             </el-button>
                         </el-button-group>
-                    </el-col>
-                    <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                    </div>
+                    <div class="flex flex-row gap-2 md:flex-col lg:flex-row">
                         <TableSetting title="container-refresh" @search="refresh()" />
-                        <div class="search-button">
-                            <el-input
-                                clearable
-                                v-model="searchName"
-                                @clear="search()"
-                                suffix-icon="Search"
-                                @keyup.enter="search()"
-                                @change="search()"
-                                :placeholder="$t('commons.button.search')"
-                            ></el-input>
-                        </div>
-                    </el-col>
-                </el-row>
+                        <TableSearch @search="search()" v-model:searchName="searchName" />
+                    </div>
+                </div>
             </template>
             <template #search>
-                <el-select v-model="searchState" @change="search()" clearable>
+                <el-select v-model="searchState" @change="search()" clearable class="p-w-200">
                     <template #prefix>{{ $t('commons.table.status') }}</template>
                     <el-option :label="$t('commons.table.all')" value="all"></el-option>
                     <el-option :label="$t('commons.status.created')" value="created"></el-option>
@@ -104,9 +95,12 @@
                         sortable
                         fix
                         :fixed="mobile ? false : 'left'"
+                        show-overflow-tooltip
                     >
                         <template #default="{ row }">
-                            <Tooltip @click="onInspect(row.containerID)" :text="row.name" />
+                            <el-text type="primary" class="cursor-pointer" @click="onInspect(row.containerID)">
+                                {{ row.name }}
+                            </el-text>
                         </template>
                     </el-table-column>
                     <el-table-column
@@ -120,7 +114,12 @@
                             <Status :key="row.state" :status="row.state"></Status>
                         </template>
                     </el-table-column>
-                    <el-table-column :label="$t('container.source')" show-overflow-tooltip min-width="100">
+                    <el-table-column
+                        :label="$t('container.source')"
+                        show-overflow-tooltip
+                        prop="resource"
+                        min-width="150"
+                    >
                         <template #default="{ row }">
                             <div v-if="row.hasLoad">
                                 <div class="source-font">CPU: {{ row.cpuPercent.toFixed(2) }}%</div>
@@ -205,9 +204,9 @@
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column :label="$t('container.related')" min-width="200">
+                    <el-table-column :label="$t('container.related')" min-width="210" prop="appName">
                         <template #default="{ row }">
-                            <div>
+                            <div class="cell-button-class">
                                 <el-tooltip
                                     v-if="row.appName != ''"
                                     :hide-after="20"
@@ -224,7 +223,7 @@
                                     </el-button>
                                 </el-tooltip>
                             </div>
-                            <div>
+                            <div class="cell-button-class">
                                 <el-tooltip
                                     v-if="row.websites != null"
                                     :hide-after="20"
@@ -252,7 +251,7 @@
                         prop="ports"
                     >
                         <template #default="{ row }">
-                            <div v-if="row.ports">
+                            <div v-if="row.ports" class="cell-button-class">
                                 <div v-for="(item, index) in row.ports" :key="index">
                                     <div v-if="row.expand || (!row.expand && index < 3)">
                                         <el-tooltip :hide-after="20" :content="item" placement="top">
@@ -293,11 +292,12 @@
                     />
                     <fu-table-operations
                         fix
-                        width="180px"
+                        width="200px"
                         :ellipsis="2"
                         :buttons="buttons"
                         :label="$t('commons.table.operate')"
                         :fixed="mobile ? false : 'right'"
+                        prop="operate"
                     />
                 </ComplexTable>
             </template>
@@ -312,6 +312,7 @@
         <ContainerLogDialog ref="dialogContainerLogRef" />
         <OperateDialog @search="search" ref="dialogOperateRef" />
         <UpgradeDialog @search="search" ref="dialogUpgradeRef" />
+        <CommitDialog @search="search" ref="dialogCommitRef" />
         <MonitorDialog ref="dialogMonitorRef" />
         <TerminalDialog ref="dialogTerminalRef" />
 
@@ -320,13 +321,11 @@
 </template>
 
 <script lang="ts" setup>
-import OpDialog from '@/components/del-dialog/index.vue';
-import Tooltip from '@/components/tooltip/index.vue';
-import TableSetting from '@/components/table-setting/index.vue';
 import PruneDialog from '@/views/container/container/prune/index.vue';
 import RenameDialog from '@/views/container/container/rename/index.vue';
 import OperateDialog from '@/views/container/container/operate/index.vue';
 import UpgradeDialog from '@/views/container/container/upgrade/index.vue';
+import CommitDialog from '@/views/container/container/commit/index.vue';
 import MonitorDialog from '@/views/container/container/monitor/index.vue';
 import ContainerLogDialog from '@/views/container/container/log/index.vue';
 import TerminalDialog from '@/views/container/container/terminal/index.vue';
@@ -367,9 +366,10 @@ const paginationConfig = reactive({
 const searchName = ref();
 const searchState = ref('all');
 const dialogUpgradeRef = ref();
+const dialogCommitRef = ref();
 const dialogPortJumpRef = ref();
 const opRef = ref();
-const includeAppStore = ref(true);
+const includeAppStore = ref();
 const columns = ref([]);
 
 const dockerStatus = ref('Running');
@@ -423,6 +423,7 @@ const dialogRenameRef = ref();
 const dialogPruneRef = ref();
 
 const search = async (column?: any) => {
+    localStorage.setItem('includeAppStore', includeAppStore.value ? 'true' : 'false');
     let filterItem = props.filters ? props.filters : '';
     paginationConfig.orderBy = column?.order ? column.prop : paginationConfig.orderBy;
     paginationConfig.order = column?.order ? column.order : paginationConfig.order;
@@ -648,7 +649,7 @@ const onOperate = async (op: string, row: Container.ContainerInfo | null) => {
 
 const buttons = [
     {
-        label: i18n.global.t('file.terminal'),
+        label: i18n.global.t('container.containerTerminal'),
         disabled: (row: Container.ContainerInfo) => {
             return row.state !== 'running';
         },
@@ -690,6 +691,15 @@ const buttons = [
         },
         disabled: (row: any) => {
             return row.isFromCompose;
+        },
+    },
+    {
+        label: i18n.global.t('container.makeImage'),
+        click: (row: Container.ContainerInfo) => {
+            dialogCommitRef.value!.acceptParams({ containerID: row.containerID, containerName: row.name });
+        },
+        disabled: (row: any) => {
+            return checkStatus('commit', row);
         },
     },
     {
@@ -758,6 +768,8 @@ const buttons = [
 ];
 
 onMounted(() => {
+    let includeItem = localStorage.getItem('includeAppStore');
+    includeAppStore.value = !includeItem || includeItem === 'true';
     loadStatus();
 });
 </script>
@@ -773,5 +785,12 @@ onMounted(() => {
     margin-top: -3px;
     font-size: 6px;
     cursor: pointer;
+}
+.cell-button-class {
+    button,
+    :deep(span) {
+        max-width: 100%;
+        overflow: hidden;
+    }
 }
 </style>

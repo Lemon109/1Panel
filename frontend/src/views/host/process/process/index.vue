@@ -1,58 +1,30 @@
 <template>
     <div>
         <FireRouter />
-        <LayoutContent :title="$t('menu.process')" v-loading="loading">
+        <LayoutContent :title="$t('menu.process', 2)" v-loading="loading">
             <template #toolbar>
-                <el-row>
-                    <el-col :span="24">
-                        <div style="width: 100%">
-                            <el-form-item style="float: right">
-                                <el-row :gutter="20">
-                                    <el-col :span="8">
-                                        <div class="search-button">
-                                            <el-input
-                                                type="number"
-                                                v-model.number="processSearch.pid"
-                                                clearable
-                                                @clear="search()"
-                                                suffix-icon="Search"
-                                                @keyup.enter="search()"
-                                                @change="search()"
-                                                :placeholder="$t('process.pid')"
-                                            ></el-input>
-                                        </div>
-                                    </el-col>
-                                    <el-col :span="8">
-                                        <div class="search-button">
-                                            <el-input
-                                                v-model.trim="processSearch.name"
-                                                clearable
-                                                @clear="search()"
-                                                suffix-icon="Search"
-                                                @keyup.enter="search()"
-                                                @change="search()"
-                                                :placeholder="$t('commons.table.name')"
-                                            ></el-input>
-                                        </div>
-                                    </el-col>
-                                    <el-col :span="8">
-                                        <div class="search-button">
-                                            <el-input
-                                                v-model.trim="processSearch.username"
-                                                clearable
-                                                @clear="search()"
-                                                suffix-icon="Search"
-                                                @keyup.enter="search()"
-                                                @change="search()"
-                                                :placeholder="$t('commons.table.user')"
-                                            ></el-input>
-                                        </div>
-                                    </el-col>
-                                </el-row>
-                            </el-form-item>
-                        </div>
-                    </el-col>
-                </el-row>
+                <div class="flex justify-between gap-2 flex-wrap sm:flex-row">
+                    <div><!-- 占位 --></div>
+                    <div class="flex flex-wrap gap-3">
+                        <TableSearch
+                            @search="search()"
+                            :placeholder="$t('process.pid')"
+                            v-model:searchName="processSearch.pid"
+                        />
+
+                        <TableSearch
+                            @search="search()"
+                            :placeholder="$t('commons.table.name')"
+                            v-model:searchName="processSearch.name"
+                        />
+
+                        <TableSearch
+                            @search="search()"
+                            :placeholder="$t('commons.table.user')"
+                            v-model:searchName="processSearch.username"
+                        />
+                    </div>
+                </div>
             </template>
             <template #main>
                 <ComplexTable :data="data" @sort-change="changeSort" @filter-change="changeFilter" ref="tableRef">
@@ -82,11 +54,17 @@
                     <el-table-column
                         :label="$t('process.memory')"
                         fix
+                        min-width="120"
                         prop="rssValue"
                         :formatter="memFormatter"
                         sortable
                     ></el-table-column>
-                    <el-table-column :label="$t('process.numConnections')" fix prop="numConnections"></el-table-column>
+                    <el-table-column
+                        :label="$t('process.numConnections')"
+                        fix
+                        prop="numConnections"
+                        min-width="120"
+                    ></el-table-column>
                     <el-table-column
                         :label="$t('process.status')"
                         fix
@@ -126,7 +104,6 @@
 
 <script setup lang="ts">
 import FireRouter from '@/views/host/process/index.vue';
-import OpDialog from '@/components/del-dialog/index.vue';
 import { ref, onMounted, onUnmounted, nextTick, reactive } from 'vue';
 import ProcessDetail from './detail/index.vue';
 import i18n from '@/lang';
@@ -153,7 +130,7 @@ const opRef = ref();
 
 const buttons = [
     {
-        label: i18n.global.t('app.detail'),
+        label: i18n.global.t('process.viewDetails'),
         click: function (row: any) {
             openDetail(row);
         },
@@ -274,7 +251,7 @@ const search = () => {
     if (isWsOpen() && !isGetData.value) {
         isGetData.value = true;
         if (typeof processSearch.pid === 'string') {
-            processSearch.pid = undefined;
+            processSearch.pid = Number(processSearch.pid);
         }
         processSocket.send(JSON.stringify(processSearch));
     }

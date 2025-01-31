@@ -1,12 +1,12 @@
 <template>
     <div>
-        <LayoutContent v-loading="loading" :title="$t('ssh.loginLogs')">
+        <LayoutContent v-loading="loading" :title="'SSH ' + $t('ssh.loginLogs', 2)">
             <template #prompt>
                 <el-alert type="info" :title="$t('ssh.sshAlert2')" :closable="false" />
                 <div class="mt-2"><el-alert type="info" :title="$t('ssh.sshAlert')" :closable="false" /></div>
             </template>
             <template #search>
-                <el-select v-model="searchStatus" @change="search()">
+                <el-select v-model="searchStatus" @change="search()" class="p-w-200">
                     <template #prefix>{{ $t('commons.table.status') }}</template>
                     <el-option :label="$t('commons.table.all')" value="All"></el-option>
                     <el-option :label="$t('commons.status.success')" value="Success"></el-option>
@@ -14,23 +14,13 @@
                 </el-select>
             </template>
             <template #toolbar>
-                <el-row>
-                    <el-col :xs="24" :sm="16" :md="16" :lg="16" :xl="16"></el-col>
-                    <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <div class="flex justify-between gap-2 flex-wrap sm:flex-row">
+                    <div><!-- 占位 --></div>
+                    <div class="flex flex-wrap gap-3">
                         <TableSetting @search="search()" />
-                        <div class="search-button">
-                            <el-input
-                                clearable
-                                v-model="searchInfo"
-                                @clear="search()"
-                                suffix-icon="Search"
-                                @keyup.enter="search()"
-                                @change="search()"
-                                :placeholder="$t('commons.button.search')"
-                            ></el-input>
-                        </div>
-                    </el-col>
-                </el-row>
+                        <TableSearch @search="search()" v-model:searchName="searchInfo" />
+                    </div>
+                </div>
             </template>
 
             <template #main>
@@ -69,9 +59,8 @@
 </template>
 
 <script setup lang="ts">
-import TableSetting from '@/components/table-setting/index.vue';
 import { dateFormat } from '@/utils/util';
-import { onMounted, reactive, ref } from '@vue/runtime-core';
+import { onMounted, reactive, ref } from 'vue';
 import { loadSSHLogs } from '@/api/modules/host';
 
 const loading = ref();

@@ -27,6 +27,7 @@ func NewParser(filePath string) (*Parser, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 	l := newLexer(bufio.NewReader(f))
 	l.file = filePath
 	p := NewParserFromLexer(l)
@@ -113,7 +114,7 @@ parsingloop:
 		case p.curTokenIs(flag.LuaCode):
 			context.IsLuaBlock = true
 			context.LiteralCode = p.currentToken.Literal
-		case p.curTokenIs(flag.Keyword):
+		case p.curTokenIs(flag.Keyword) || p.curTokenIs(flag.QuotedString):
 			s, err := p.parseStatement()
 			if err != nil {
 				return nil, err

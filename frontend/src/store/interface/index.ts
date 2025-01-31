@@ -5,6 +5,12 @@ export interface ThemeConfigProp {
     primary: string;
     theme: string; // dark | bright ｜ auto
     footer: boolean;
+
+    title: string;
+    logo: string;
+    logoWithText: string;
+    favicon: string;
+    themeColor: string;
 }
 
 export interface GlobalState {
@@ -12,11 +18,10 @@ export interface GlobalState {
     loadingText: string;
     isLogin: boolean;
     entrance: string;
-    csrfToken: string;
     language: string; // zh | en | tw
-    // assemblySize: string; // small | default | large
     themeConfig: ThemeConfigProp;
     isFullScreen: boolean;
+    openMenuTabs: boolean;
     isOnRestart: boolean;
     agreeLicense: boolean;
     hasNewVersion: boolean;
@@ -24,16 +29,20 @@ export interface GlobalState {
     device: DeviceType;
     lastFilePath: string;
     currentDB: string;
+    currentRedisDB: string;
     showEntranceWarn: boolean;
     defaultNetwork: string;
+
+    isProductPro: boolean;
+    isIntl: boolean;
+    isTrial: boolean;
+    productProExpires: number;
+
+    errStatus: string;
 }
 
 export interface MenuState {
     isCollapse: boolean;
     menuList: RouteRecordRaw[];
     withoutAnimation: boolean;
-}
-
-export interface AuthState {
-    authRouter: string[];
 }

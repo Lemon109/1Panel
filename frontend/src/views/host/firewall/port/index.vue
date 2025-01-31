@@ -17,7 +17,7 @@
                     <span>{{ $t('firewall.firewallNotStart') }}</span>
                 </el-card>
 
-                <LayoutContent :title="$t('firewall.portRule')" :class="{ mask: fireStatus != 'running' }">
+                <LayoutContent :title="$t('firewall.portRule', 2)" :class="{ mask: fireStatus != 'running' }">
                     <template #prompt>
                         <el-alert type="info" :closable="false">
                             <template #default>
@@ -37,13 +37,13 @@
                     </template>
                     <template #search>
                         <div class="flx-align-center">
-                            <el-select v-model="searchStatus" @change="search()" clearable>
+                            <el-select v-model="searchStatus" @change="search()" clearable class="p-w-200">
                                 <template #prefix>{{ $t('commons.table.status') }}</template>
                                 <el-option :label="$t('commons.table.all')" value=""></el-option>
                                 <el-option :label="$t('firewall.unUsed')" value="free"></el-option>
                                 <el-option :label="$t('firewall.used')" value="used"></el-option>
                             </el-select>
-                            <el-select v-model="searchStrategy" style="margin-left: 10px" @change="search()" clearable>
+                            <el-select v-model="searchStrategy" @change="search()" clearable class="p-w-200 ml-2.5">
                                 <template #prefix>{{ $t('firewall.strategy') }}</template>
                                 <el-option :label="$t('commons.table.all')" value=""></el-option>
                                 <el-option :label="$t('firewall.accept')" value="accept"></el-option>
@@ -52,28 +52,20 @@
                         </div>
                     </template>
                     <template #toolbar>
-                        <el-row>
-                            <el-col :span="16">
+                        <div class="flex justify-between gap-2 flex-wrap sm:flex-row">
+                            <div class="flex flex-wrap gap-3">
                                 <el-button type="primary" @click="onOpenDialog('create')">
-                                    {{ $t('commons.button.create') }}{{ $t('firewall.portRule') }}
+                                    {{ $t('firewall.createPortRule') }}
                                 </el-button>
                                 <el-button @click="onDelete(null)" plain :disabled="selects.length === 0">
                                     {{ $t('commons.button.delete') }}
                                 </el-button>
-                            </el-col>
-                            <el-col :span="8">
+                            </div>
+                            <div class="flex flex-wrap gap-3">
                                 <TableSetting @search="search()" />
-                                <div class="search-button">
-                                    <el-input
-                                        clearable
-                                        v-model="searchName"
-                                        suffix-icon="Search"
-                                        @change="search()"
-                                        :placeholder="$t('commons.button.search')"
-                                    ></el-input>
-                                </div>
-                            </el-col>
-                        </el-row>
+                                <TableSearch @search="search()" v-model:searchName="searchName" />
+                            </div>
+                        </div>
                     </template>
                     <template #main>
                         <ComplexTable
@@ -157,15 +149,15 @@
                 <LayoutContent :title="$t('firewall.firewall')" :divider="true">
                     <template #main>
                         <div class="app-warn">
-                            <div>
+                            <div class="flex flex-col gap-2 items-center justify-center w-full sm:flex-row">
                                 <span>{{ $t('firewall.notSupport') }}</span>
-                                <span @click="toDoc">
-                                    <el-icon class="ml-2"><Position /></el-icon>
+                                <span @click="toDoc" class="flex items-center justify-center gap-0.5">
+                                    <el-icon><Position /></el-icon>
                                     {{ $t('firewall.quickJump') }}
                                 </span>
-                                <div>
-                                    <img src="@/assets/images/no_app.svg" />
-                                </div>
+                            </div>
+                            <div>
+                                <img src="@/assets/images/no_app.svg" />
                             </div>
                         </div>
                     </template>
@@ -180,8 +172,6 @@
 
 <script lang="ts" setup>
 import FireRouter from '@/views/host/firewall/index.vue';
-import OpDialog from '@/components/del-dialog/index.vue';
-import TableSetting from '@/components/table-setting/index.vue';
 import OperateDialog from '@/views/host/firewall/port/operate/index.vue';
 import FireStatus from '@/views/host/firewall/status/index.vue';
 import { onMounted, reactive, ref } from 'vue';
@@ -191,6 +181,9 @@ import i18n from '@/lang';
 import { MsgSuccess } from '@/utils/message';
 import { ElMessageBox } from 'element-plus';
 import router from '@/routers';
+import { GlobalStore } from '@/store';
+
+const globalStore = GlobalStore();
 
 const loading = ref();
 const activeTag = ref('port');
@@ -264,7 +257,7 @@ const quickJump = () => {
     router.push({ name: 'AppInstalled' });
 };
 const toDoc = () => {
-    window.open('https://1panel.cn/docs/user_manual/hosts/firewall/', '_blank', 'noopener,noreferrer');
+    window.open(globalStore.docsUrl + '/user_manual/hosts/firewall/', '_blank', 'noopener,noreferrer');
 };
 
 const onChangeStatus = async (row: Host.RuleInfo, status: string) => {

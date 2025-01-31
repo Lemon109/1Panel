@@ -10,6 +10,7 @@ import (
 )
 
 type DBInfo struct {
+	Type     string `json:"type"`
 	From     string `json:"from"`
 	Database string `json:"database"`
 	Address  string `json:"address"`
@@ -70,6 +71,8 @@ type AccessChangeInfo struct {
 
 type BackupInfo struct {
 	Name      string `json:"name"`
+	Type      string `json:"type"`
+	Version   string `json:"version"`
 	Format    string `json:"format"`
 	TargetDir string `json:"targetDir"`
 	FileName  string `json:"fileName"`
@@ -79,6 +82,8 @@ type BackupInfo struct {
 
 type RecoverInfo struct {
 	Name       string `json:"name"`
+	Type       string `json:"type"`
+	Version    string `json:"version"`
 	Format     string `json:"format"`
 	SourceFile string `json:"sourceFile"`
 
@@ -100,25 +105,6 @@ var formatMap = map[string]string{
 	"utf8mb4": "utf8mb4_general_ci",
 	"gbk":     "gbk_chinese_ci",
 	"big5":    "big5_chinese_ci",
-}
-
-func VerifyPeerCertFunc(pool *x509.CertPool) func([][]byte, [][]*x509.Certificate) error {
-	return func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
-		if len(rawCerts) == 0 {
-			return errors.New("no certificates available to verify")
-		}
-
-		cert, err := x509.ParseCertificate(rawCerts[0])
-		if err != nil {
-			return err
-		}
-
-		opts := x509.VerifyOptions{Roots: pool}
-		if _, err = cert.Verify(opts); err != nil {
-			return err
-		}
-		return nil
-	}
 }
 
 func ConnWithSSL(ssl, skipVerify bool, clientKey, clientCert, rootCert string) (string, error) {

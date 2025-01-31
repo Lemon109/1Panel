@@ -21,9 +21,9 @@
                                 </el-form-item>
                                 <el-form-item label="appendfsync" prop="appendfsync">
                                     <el-radio-group style="width: 100%" v-model="form.appendfsync">
-                                        <el-radio label="always">always</el-radio>
-                                        <el-radio label="everysec">everysec</el-radio>
-                                        <el-radio label="no">no</el-radio>
+                                        <el-radio value="always">always</el-radio>
+                                        <el-radio value="everysec">everysec</el-radio>
+                                        <el-radio value="no">no</el-radio>
                                     </el-radio-group>
                                 </el-form-item>
                                 <el-form-item>
@@ -113,7 +113,6 @@
 </template>
 
 <script lang="ts" setup>
-import OpDialog from '@/components/del-dialog/index.vue';
 import ConfirmDialog from '@/components/confirm-dialog/index.vue';
 import { Database } from '@/api/interface/database';
 import { redisPersistenceConf, updateRedisPersistenceConf } from '@/api/modules/database';
@@ -140,14 +139,17 @@ const rules = reactive({
     appendfsync: [Rules.requiredSelect],
 });
 const formRef = ref<FormInstance>();
+const database = ref();
 const opRef = ref();
 
 interface DialogProps {
+    database: string;
     status: string;
 }
 const persistenceShow = ref(false);
 const acceptParams = (prop: DialogProps): void => {
     persistenceShow.value = true;
+    database.value = prop.database;
     if (prop.status === 'Running') {
         loadform();
         search();
@@ -180,7 +182,7 @@ const handleDelete = (index: number) => {
 const search = async () => {
     let params = {
         type: 'redis',
-        name: '',
+        name: database.value,
         detailName: '',
         page: paginationConfig.currentPage,
         pageSize: paginationConfig.pageSize,
@@ -191,7 +193,7 @@ const search = async () => {
 };
 const onBackup = async () => {
     emit('loading', true);
-    await handleBackup({ name: '', detailName: '', type: 'redis' })
+    await handleBackup({ name: database.value, detailName: '', type: 'redis', secret: '' })
         .then(() => {
             emit('loading', false);
             search();
@@ -205,9 +207,10 @@ const onRecover = async () => {
     let param = {
         source: currentRow.value.source,
         type: 'redis',
-        name: '',
+        name: database.value,
         detailName: '',
         file: currentRow.value.fileDir + '/' + currentRow.value.fileName,
+        secret: '',
     };
     emit('loading', true);
     await handleRecover(param)
@@ -267,6 +270,7 @@ const buttons = [
 
 const onSave = async (formEl: FormInstance | undefined, type: string) => {
     let param = {} as Database.RedisConfPersistenceUpdate;
+    param.database = database.value;
     if (type == 'aof') {
         if (!formEl) return;
         formEl.validate(async (valid) => {
@@ -309,7 +313,7 @@ const onSave = async (formEl: FormInstance | undefined, type: string) => {
 
 const loadform = async () => {
     form.saves = [];
-    const res = await redisPersistenceConf();
+    const res = await redisPersistenceConf(database.value);
     form.appendonly = res.data?.appendonly;
     form.appendfsync = res.data?.appendfsync;
     let itemSaves = res.data?.save.split(' ');

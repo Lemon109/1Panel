@@ -216,11 +216,16 @@ func (u *PostgresqlService) LoadFromRemote(database string) error {
 	if err != nil {
 		return err
 	}
+	deleteList := databases
 	for _, data := range datas {
 		hasOld := false
-		for _, oldData := range databases {
-			if strings.EqualFold(oldData.Name, data.Name) && strings.EqualFold(oldData.PostgresqlName, data.PostgresqlName) {
+		for i := 0; i < len(databases); i++ {
+			if strings.EqualFold(databases[i].Name, data.Name) && strings.EqualFold(databases[i].PostgresqlName, data.PostgresqlName) {
 				hasOld = true
+				if databases[i].IsDelete {
+					_ = postgresqlRepo.Update(databases[i].ID, map[string]interface{}{"is_delete": false})
+				}
+				deleteList = append(deleteList[:i], deleteList[i+1:]...)
 				break
 			}
 		}
@@ -233,6 +238,9 @@ func (u *PostgresqlService) LoadFromRemote(database string) error {
 				return err
 			}
 		}
+	}
+	for _, delItem := range deleteList {
+		_ = postgresqlRepo.Update(delItem.ID, map[string]interface{}{"is_delete": true})
 	}
 	return nil
 }
@@ -261,7 +269,7 @@ func (u *PostgresqlService) DeleteCheck(req dto.PostgresqlDBDeleteCheck) ([]stri
 			}
 		}
 	} else {
-		apps, _ := appInstallResourceRepo.GetBy(appInstallResourceRepo.WithResourceId(db.ID))
+		apps, _ := appInstallResourceRepo.GetBy(appInstallResourceRepo.WithResourceId(db.ID), appRepo.WithKey(req.Type))
 		for _, app := range apps {
 			appInstall, _ := appInstallRepo.GetFirst(commonRepo.WithByID(app.AppInstallId))
 			if appInstall.ID != 0 {
@@ -393,7 +401,7 @@ func (u *PostgresqlService) ChangePassword(req dto.ChangeDBInfo) error {
 			}
 
 			global.LOG.Infof("start to update postgresql password used by app %s-%s", appModel.Key, appInstall.Name)
-			if err := updateInstallInfoInDB(appModel.Key, appInstall.Name, "user-password", true, req.Value); err != nil {
+			if err := updateInstallInfoInDB(appModel.Key, appInstall.Name, "user-password", req.Value); err != nil {
 				return err
 			}
 		}
@@ -406,8 +414,19 @@ func (u *PostgresqlService) ChangePassword(req dto.ChangeDBInfo) error {
 		return nil
 	}
 
-	if err := updateInstallInfoInDB(req.Type, req.Database, "password", false, req.Value); err != nil {
+	if err := updateInstallInfoInDB(req.Type, req.Database, "password", req.Value); err != nil {
 		return err
+	}
+	if req.From == "local" {
+		remote, err := databaseRepo.Get(commonRepo.WithByName(req.Database))
+		if err != nil {
+			return err
+		}
+		pass, err := encrypt.StringEncrypt(req.Value)
+		if err != nil {
+			return fmt.Errorf("decrypt database password failed, err: %v", err)
+		}
+		_ = databaseRepo.Update(remote.ID, map[string]interface{}{"password": pass})
 	}
 	return nil
 }

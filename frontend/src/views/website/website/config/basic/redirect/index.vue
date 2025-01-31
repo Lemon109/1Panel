@@ -2,7 +2,7 @@
     <ComplexTable :data="data" @search="search" v-loading="loading">
         <template #toolbar>
             <el-button type="primary" plain @click="openCreate">
-                {{ $t('commons.button.create') + $t('website.redirect') }}
+                {{ $t('commons.button.create') }}
             </el-button>
         </template>
         <el-table-column :label="$t('commons.table.name')" prop="name" min-width="60px" show-overflow-tooltip />
@@ -55,7 +55,6 @@
 
 <script lang="ts" setup name="proxy">
 import { Website } from '@/api/interface/website';
-import OpDialog from '@/components/del-dialog/index.vue';
 import { OperateRedirectConfig, GetRedirectConfig } from '@/api/modules/website';
 import { computed, onMounted, ref } from 'vue';
 import Create from './create/index.vue';
@@ -88,7 +87,7 @@ const opRef = ref();
 
 const buttons = [
     {
-        label: i18n.global.t('website.proxyFile'),
+        label: i18n.global.t('website.sourceFile'),
         click: function (row: Website.RedirectConfig) {
             openEditFile(row);
         },
@@ -150,7 +149,7 @@ const deleteProxy = async (redirectConfig: Website.RedirectConfig) => {
         names: [redirectConfig.name],
         msg: i18n.global.t('commons.msg.operatorHelper', [
             i18n.global.t('website.redirect'),
-            i18n.global.t('commons.msg.delete'),
+            i18n.global.t('commons.button.delete'),
         ]),
         api: OperateRedirectConfig,
         params: redirectConfig,

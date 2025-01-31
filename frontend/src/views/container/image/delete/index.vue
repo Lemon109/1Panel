@@ -1,6 +1,12 @@
 <template>
     <div>
-        <el-drawer v-model="deleteVisible" :destroy-on-close="true" :close-on-click-modal="false" size="30%">
+        <el-drawer
+            v-model="deleteVisible"
+            :destroy-on-close="true"
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
+            size="30%"
+        >
             <template #header>
                 <DrawerHeader :header="$t('container.imageDelete')" :back="handleClose" />
             </template>
@@ -48,7 +54,6 @@
 <script lang="ts" setup>
 import { reactive, ref } from 'vue';
 import { ElForm } from 'element-plus';
-import OpDialog from '@/components/del-dialog/index.vue';
 import { imageRemove } from '@/api/modules/container';
 import DrawerHeader from '@/components/drawer-header/index.vue';
 import i18n from '@/lang';

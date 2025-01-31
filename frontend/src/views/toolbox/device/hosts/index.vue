@@ -1,6 +1,12 @@
 <template>
     <div>
-        <el-drawer v-model="drawerVisible" :destroy-on-close="true" :close-on-click-modal="false" size="50%">
+        <el-drawer
+            v-model="drawerVisible"
+            :destroy-on-close="true"
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
+            size="50%"
+        >
             <template #header>
                 <DrawerHeader header="Hosts" :back="handleClose" />
             </template>
@@ -8,8 +14,8 @@
             <el-row type="flex" justify="center" v-loading="loading">
                 <el-col :span="22">
                     <el-radio-group v-model="confShowType" @change="changeMode">
-                        <el-radio-button label="base">{{ $t('database.baseConf') }}</el-radio-button>
-                        <el-radio-button label="all">{{ $t('database.allConf') }}</el-radio-button>
+                        <el-radio-button value="base">{{ $t('database.baseConf') }}</el-radio-button>
+                        <el-radio-button value="all">{{ $t('database.allConf') }}</el-radio-button>
                     </el-radio-group>
                     <div v-if="confShowType === 'base'">
                         <el-table :data="form.hosts">

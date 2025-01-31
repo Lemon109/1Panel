@@ -2,14 +2,14 @@
     <div>
         <el-card class="router_card">
             <el-radio-group v-model="activeNames" @change="handleChange">
-                <el-radio-button class="router_card_button" size="large" label="terminal">
-                    {{ $t('menu.terminal') }}
+                <el-radio-button class="router_card_button" size="large" value="terminal">
+                    {{ $t('menu.terminal', 2) }}
                 </el-radio-button>
-                <el-radio-button class="router_card_button" size="large" label="host">
-                    {{ $t('menu.host') }}
+                <el-radio-button class="router_card_button" size="large" value="host">
+                    {{ $t('menu.host', 2) }}
                 </el-radio-button>
-                <el-radio-button class="router_card_button" size="large" label="command">
-                    {{ $t('terminal.quickCommand') }}
+                <el-radio-button class="router_card_button" size="large" value="command">
+                    {{ $t('terminal.quickCommand', 2) }}
                 </el-radio-button>
             </el-radio-group>
         </el-card>

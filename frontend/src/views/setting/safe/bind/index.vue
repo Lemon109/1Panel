@@ -1,6 +1,12 @@
 <template>
     <div>
-        <el-drawer v-model="drawerVisible" :destroy-on-close="true" :close-on-click-modal="false" size="30%">
+        <el-drawer
+            v-model="drawerVisible"
+            :destroy-on-close="true"
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
+            size="30%"
+        >
             <template #header>
                 <DrawerHeader :header="$t('setting.bindInfo')" :back="handleClose" />
             </template>
@@ -9,8 +15,8 @@
                     <el-col :span="22">
                         <el-form-item :label="$t('setting.ipv6')" prop="ipv6" :rules="Rules.requiredSelect">
                             <el-radio-group style="width: 100%" v-model="form.ipv6" @change="onChangeMode()">
-                                <el-radio label="enable">{{ $t('commons.button.enable') }}</el-radio>
-                                <el-radio label="disable">{{ $t('commons.button.disable') }}</el-radio>
+                                <el-radio value="enable">{{ $t('commons.button.enable') }}</el-radio>
+                                <el-radio value="disable">{{ $t('commons.button.disable') }}</el-radio>
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item

@@ -1,13 +1,13 @@
 <template>
-    <el-drawer :close-on-click-modal="false" v-model="open" size="50%">
+    <el-drawer :close-on-click-modal="false" :close-on-press-escape="false" v-model="open" size="50%">
         <template #header>
             <DrawerHeader :header="$t('ssl.detail')" :back="handleClose" />
         </template>
         <div v-loading="loading">
             <el-radio-group v-model="curr">
-                <el-radio-button label="detail">{{ $t('ssl.msg') }}</el-radio-button>
-                <el-radio-button label="ssl">{{ $t('ssl.ssl') }}</el-radio-button>
-                <el-radio-button label="key">{{ $t('ssl.key') }}</el-radio-button>
+                <el-radio-button value="detail">{{ $t('ssl.msg') }}</el-radio-button>
+                <el-radio-button value="ssl">{{ $t('ssl.ssl') }}</el-radio-button>
+                <el-radio-button value="key">{{ $t('ssl.key') }}</el-radio-button>
             </el-radio-group>
             <div v-if="curr === 'detail'" class="mt-5">
                 <el-descriptions border :column="1">

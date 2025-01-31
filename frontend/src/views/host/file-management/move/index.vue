@@ -1,5 +1,11 @@
 <template>
-    <el-drawer v-model="open" :destroy-on-close="true" :close-on-click-modal="false" size="40%">
+    <el-drawer
+        v-model="open"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        size="40%"
+    >
         <template #header>
             <DrawerHeader :header="title" :back="handleClose" />
         </template>
@@ -23,8 +29,8 @@
                             <el-input v-model="addForm.name" :disabled="addForm.cover"></el-input>
                         </el-form-item>
                         <el-radio-group v-model="addForm.cover" @change="changeType">
-                            <el-radio :label="true" size="large">{{ $t('file.replace') }}</el-radio>
-                            <el-radio :label="false" size="large">{{ $t('file.rename') }}</el-radio>
+                            <el-radio :value="true" size="large">{{ $t('file.replace') }}</el-radio>
+                            <el-radio :value="false" size="large">{{ $t('file.rename') }}</el-radio>
                         </el-radio-group>
                     </div>
                 </el-form>

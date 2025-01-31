@@ -1,36 +1,26 @@
 <template>
     <div>
-        <LayoutContent v-loading="loading" :title="$t('terminal.host')">
+        <LayoutContent v-loading="loading" :title="$t('terminal.host', 2)">
             <template #toolbar>
-                <el-row>
-                    <el-col :span="20">
+                <div class="flex w-full flex-col gap-4 md:justify-between md:flex-row">
+                    <div class="flex flex-wrap gap-4">
                         <el-button type="primary" @click="onOpenDialog('create')">
                             {{ $t('terminal.addHost') }}
                         </el-button>
                         <el-button type="primary" plain @click="onOpenGroupDialog()">
-                            {{ $t('terminal.group') }}
+                            {{ $t('terminal.manageGroup') }}
                         </el-button>
                         <el-button type="primary" plain :disabled="selects.length === 0" @click="onBatchDelete(null)">
                             {{ $t('commons.button.delete') }}
                         </el-button>
-                    </el-col>
-                    <el-col :span="4">
-                        <div class="search-button">
-                            <el-input
-                                v-model="info"
-                                clearable
-                                @clear="search()"
-                                suffix-icon="Search"
-                                @keyup.enter="search()"
-                                @change="search()"
-                                :placeholder="$t('commons.button.search')"
-                            ></el-input>
-                        </div>
-                    </el-col>
-                </el-row>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <TableSearch @search="search()" v-model:searchName="info" />
+                    </div>
+                </div>
             </template>
             <template #search>
-                <el-select v-model="group" @change="search()" clearable>
+                <el-select v-model="group" @change="search()" clearable class="p-w-200">
                     <template #prefix>{{ $t('terminal.group') }}</template>
                     <el-option :label="$t('commons.table.all')" value=""></el-option>
                     <div v-for="item in groupList" :key="item.name">
@@ -75,7 +65,6 @@
 
 <script setup lang="ts">
 import GroupDialog from '@/components/group/index.vue';
-import OpDialog from '@/components/del-dialog/index.vue';
 import GroupChangeDialog from '@/components/group/change.vue';
 import OperateDialog from '@/views/host/terminal/host/operate/index.vue';
 import { deleteHost, editHostGroup, searchHosts } from '@/api/modules/host';

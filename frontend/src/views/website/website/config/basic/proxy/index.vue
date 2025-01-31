@@ -1,7 +1,7 @@
 <template>
     <ComplexTable :data="data" @search="search" v-loading="loading">
         <template #toolbar>
-            <el-button type="primary" plain @click="openCreate">{{ $t('website.createProxy') }}</el-button>
+            <el-button type="primary" plain @click="openCreate">{{ $t('commons.button.create') }}</el-button>
         </template>
         <el-table-column :label="$t('commons.table.name')" prop="name"></el-table-column>
         <el-table-column :label="$t('website.proxyPath')" prop="match"></el-table-column>
@@ -38,8 +38,7 @@
 
 <script lang="ts" setup name="proxy">
 import { Website } from '@/api/interface/website';
-import OpDialog from '@/components/del-dialog/index.vue';
-import { OperateProxyConfig, GetProxyConfig } from '@/api/modules/website';
+import { OperateProxyConfig, GetProxyConfig, DelProxy } from '@/api/modules/website';
 import { computed, onMounted, ref } from 'vue';
 import Create from './create/index.vue';
 import File from './file/index.vue';
@@ -71,7 +70,7 @@ const opRef = ref();
 
 const buttons = [
     {
-        label: i18n.global.t('website.proxyFile'),
+        label: i18n.global.t('website.sourceFile'),
         click: function (row: Website.ProxyConfig) {
             openEditFile(row);
         },
@@ -109,6 +108,8 @@ const initData = (id: number): Website.ProxyConfig => ({
     proxyPass: 'http://',
     proxyHost: '$host',
     replaces: {},
+    sni: false,
+    proxySSLName: '',
 });
 
 const openCreate = () => {
@@ -129,16 +130,19 @@ const openEditFile = (proxyConfig: Website.ProxyConfig) => {
 };
 
 const deleteProxy = async (proxyConfig: Website.ProxyConfig) => {
-    proxyConfig.operate = 'delete';
+    const del = {
+        id: proxyConfig.id,
+        name: proxyConfig.name,
+    };
     opRef.value.acceptParams({
         title: i18n.global.t('commons.msg.deleteTitle'),
         names: [proxyConfig.name],
         msg: i18n.global.t('commons.msg.operatorHelper', [
             i18n.global.t('website.proxy'),
-            i18n.global.t('commons.msg.delete'),
+            i18n.global.t('commons.button.delete'),
         ]),
-        api: OperateProxyConfig,
-        params: proxyConfig,
+        api: DelProxy,
+        params: del,
     });
 };
 

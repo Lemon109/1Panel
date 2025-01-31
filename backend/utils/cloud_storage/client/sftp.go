@@ -8,6 +8,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/1Panel-dev/1Panel/backend/global"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 )
@@ -21,6 +22,9 @@ type sftpClient struct {
 func NewSftpClient(vars map[string]interface{}) (*sftpClient, error) {
 	address := loadParamFromVars("address", vars)
 	port := loadParamFromVars("port", vars)
+	if len(port) == 0 {
+		global.LOG.Errorf("load param port from vars failed, err: not exist!")
+	}
 	password := loadParamFromVars("password", vars)
 	username := loadParamFromVars("username", vars)
 	bucket := loadParamFromVars("bucket", vars)
@@ -46,12 +50,12 @@ func (s sftpClient) Upload(src, target string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	defer sshClient.Close()
 	client, err := sftp.NewClient(sshClient)
 	if err != nil {
 		return false, err
 	}
 	defer client.Close()
-	defer sshClient.Close()
 
 	srcFile, err := os.Open(src)
 	if err != nil {

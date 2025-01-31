@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/1Panel-dev/1Panel/backend/constant"
 	"os"
 	"path"
 	"path/filepath"
@@ -24,12 +25,12 @@ func (u *BackupService) MysqlBackup(req dto.CommonBackup) error {
 		return err
 	}
 
-	timeNow := time.Now().Format("20060102150405")
+	timeNow := time.Now().Format(constant.DateTimeSlimLayout)
 	itemDir := fmt.Sprintf("database/%s/%s/%s", req.Type, req.Name, req.DetailName)
 	targetDir := path.Join(localDir, itemDir)
 	fileName := fmt.Sprintf("%s_%s.sql.gz", req.DetailName, timeNow+common.RandStrAndNum(5))
 
-	if err := handleMysqlBackup(req.Name, req.DetailName, targetDir, fileName); err != nil {
+	if err := handleMysqlBackup(req.Name, req.Type, req.DetailName, targetDir, fileName); err != nil {
 		return err
 	}
 
@@ -59,14 +60,14 @@ func (u *BackupService) MysqlRecoverByUpload(req dto.CommonRecover) error {
 	file := req.File
 	fileName := path.Base(req.File)
 	if strings.HasSuffix(fileName, ".tar.gz") {
-		fileNameItem := time.Now().Format("20060102150405")
+		fileNameItem := time.Now().Format(constant.DateTimeSlimLayout)
 		dstDir := fmt.Sprintf("%s/%s", path.Dir(req.File), fileNameItem)
 		if _, err := os.Stat(dstDir); err != nil && os.IsNotExist(err) {
 			if err = os.MkdirAll(dstDir, os.ModePerm); err != nil {
 				return fmt.Errorf("mkdir %s failed, err: %v", dstDir, err)
 			}
 		}
-		if err := handleUnTar(req.File, dstDir); err != nil {
+		if err := handleUnTar(req.File, dstDir, ""); err != nil {
 			_ = os.RemoveAll(dstDir)
 			return err
 		}
@@ -100,18 +101,20 @@ func (u *BackupService) MysqlRecoverByUpload(req dto.CommonRecover) error {
 	return nil
 }
 
-func handleMysqlBackup(database, dbName, targetDir, fileName string) error {
+func handleMysqlBackup(database, dbType, dbName, targetDir, fileName string) error {
 	dbInfo, err := mysqlRepo.Get(commonRepo.WithByName(dbName), mysqlRepo.WithByMysqlName(database))
 	if err != nil {
 		return err
 	}
-	cli, _, err := LoadMysqlClientByFrom(database)
+	cli, version, err := LoadMysqlClientByFrom(database)
 	if err != nil {
 		return err
 	}
 
 	backupInfo := client.BackupInfo{
 		Name:      dbName,
+		Type:      dbType,
+		Version:   version,
 		Format:    dbInfo.Format,
 		TargetDir: targetDir,
 		FileName:  fileName,
@@ -134,15 +137,17 @@ func handleMysqlRecover(req dto.CommonRecover, isRollback bool) error {
 	if err != nil {
 		return err
 	}
-	cli, _, err := LoadMysqlClientByFrom(req.Name)
+	cli, version, err := LoadMysqlClientByFrom(req.Name)
 	if err != nil {
 		return err
 	}
 
 	if !isRollback {
-		rollbackFile := path.Join(global.CONF.System.TmpDir, fmt.Sprintf("database/%s/%s_%s.sql.gz", req.Type, req.DetailName, time.Now().Format("20060102150405")))
+		rollbackFile := path.Join(global.CONF.System.TmpDir, fmt.Sprintf("database/%s/%s_%s.sql.gz", req.Type, req.DetailName, time.Now().Format(constant.DateTimeSlimLayout)))
 		if err := cli.Backup(client.BackupInfo{
 			Name:      req.DetailName,
+			Type:      req.Type,
+			Version:   version,
 			Format:    dbInfo.Format,
 			TargetDir: path.Dir(rollbackFile),
 			FileName:  path.Base(rollbackFile),
@@ -156,6 +161,8 @@ func handleMysqlRecover(req dto.CommonRecover, isRollback bool) error {
 				global.LOG.Info("recover failed, start to rollback now")
 				if err := cli.Recover(client.RecoverInfo{
 					Name:       req.DetailName,
+					Type:       req.Type,
+					Version:    version,
 					Format:     dbInfo.Format,
 					SourceFile: rollbackFile,
 
@@ -172,6 +179,8 @@ func handleMysqlRecover(req dto.CommonRecover, isRollback bool) error {
 	}
 	if err := cli.Recover(client.RecoverInfo{
 		Name:       req.DetailName,
+		Type:       req.Type,
+		Version:    version,
 		Format:     dbInfo.Format,
 		SourceFile: req.File,
 

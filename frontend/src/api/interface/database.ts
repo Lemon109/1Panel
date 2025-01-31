@@ -23,6 +23,7 @@ export namespace Database {
         username: string;
         password: string;
         permission: string;
+        isDelete: string;
         description: string;
     }
     export interface BaseInfo {
@@ -207,6 +208,7 @@ export namespace Database {
         username: string;
         password: string;
         superUser: boolean;
+        isDelete: string;
         description: string;
     }
     export interface ChangeInfo {
@@ -219,19 +221,17 @@ export namespace Database {
 
     // redis
     export interface RedisConfUpdate {
+        database: string;
         timeout: string;
         maxclients: string;
         maxmemory: string;
     }
     export interface RedisConfPersistenceUpdate {
+        database: string;
         type: string;
         appendonly: string;
         appendfsync: string;
         save: string;
-    }
-    export interface RedisConfUpdateByFile {
-        file: string;
-        restartNow: boolean;
     }
     export interface RedisStatus {
         tcp_port: string;
@@ -260,16 +260,6 @@ export namespace Database {
         appendonly: string;
         appendfsync: string;
         save: string;
-    }
-    export interface FileRecord {
-        fileName: string;
-        fileDir: string;
-        createdAt: string;
-        size: string;
-    }
-    export interface RedisRecover {
-        fileName: string;
-        fileDir: string;
     }
 
     // remote

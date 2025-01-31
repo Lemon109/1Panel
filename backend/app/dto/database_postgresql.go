@@ -6,8 +6,8 @@ type PostgresqlDBSearch struct {
 	PageInfo
 	Info     string `json:"info"`
 	Database string `json:"database" validate:"required"`
-	OrderBy  string `json:"orderBy"`
-	Order    string `json:"order"`
+	OrderBy  string `json:"orderBy" validate:"required,oneof=name created_at"`
+	Order    string `json:"order" validate:"required,oneof=null ascending descending"`
 }
 
 type PostgresqlDBInfo struct {
@@ -20,7 +20,7 @@ type PostgresqlDBInfo struct {
 	Username       string    `json:"username"`
 	Password       string    `json:"password"`
 	SuperUser      bool      `json:"superUser"`
-	BackupCount    int       `json:"backupCount"`
+	IsDelete       bool      `json:"isDelete"`
 	Description    string    `json:"description"`
 }
 

@@ -1,6 +1,12 @@
 <template>
     <div>
-        <el-drawer v-model="dialogVisible" :destroy-on-close="true" :close-on-click-modal="false" size="50%">
+        <el-drawer
+            v-model="dialogVisible"
+            :destroy-on-close="true"
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
+            size="50%"
+        >
             <template #header>
                 <DrawerHeader :header="$t('terminal.addHost')" :back="handleClose" />
             </template>
@@ -24,8 +30,8 @@
                         </el-form-item>
                         <el-form-item :label="$t('terminal.authMode')" prop="authMode">
                             <el-radio-group @change="isOK = false" v-model="hostInfo.authMode">
-                                <el-radio label="password">{{ $t('terminal.passwordMode') }}</el-radio>
-                                <el-radio label="key">{{ $t('terminal.keyMode') }}</el-radio>
+                                <el-radio value="password">{{ $t('terminal.passwordMode') }}</el-radio>
+                                <el-radio value="key">{{ $t('terminal.keyMode') }}</el-radio>
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item

@@ -1,5 +1,11 @@
 <template>
-    <el-drawer :close-on-click-modal="false" v-model="open" size="50%">
+    <el-drawer
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        v-model="open"
+        size="50%"
+    >
         <template #header>
             <DrawerHeader
                 :header="$t('runtime.' + mode)"
@@ -28,6 +34,7 @@
                                     v-model="runtime.appID"
                                     :disabled="mode === 'edit'"
                                     @change="changeApp(runtime.appID)"
+                                    class="p-w-200"
                                 >
                                     <el-option
                                         v-for="(app, index) in apps"
@@ -42,6 +49,7 @@
                                     v-model="runtime.version"
                                     :disabled="mode === 'edit'"
                                     @change="changeVersion()"
+                                    class="p-w-200"
                                 >
                                     <el-option
                                         v-for="(version, index) in appVersions"
@@ -118,7 +126,7 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="4">
-                            <el-form-item :label="$t('commons.button.add') + $t('commons.table.port')">
+                            <el-form-item :label="$t('commons.button.add')">
                                 <el-button @click="addPort">
                                     <el-icon><Plus /></el-icon>
                                 </el-button>
@@ -163,6 +171,7 @@
                         <el-select v-model="runtime.params['PACKAGE_MANAGER']">
                             <el-option label="npm" value="npm"></el-option>
                             <el-option label="yarn" value="yarn"></el-option>
+                            <el-option v-if="hasPnpm" label="pnpm" value="pnpm"></el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item :label="$t('runtime.imageSource')" prop="source">
@@ -204,10 +213,10 @@ import { Rules, checkNumberRange } from '@/global/form-rules';
 import i18n from '@/lang';
 import { MsgError, MsgSuccess } from '@/utils/message';
 import { FormInstance } from 'element-plus';
-import { reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import DrawerHeader from '@/components/drawer-header/index.vue';
 
-interface OperateRrops {
+interface OperateProps {
     id?: number;
     mode: string;
     type: string;
@@ -261,6 +270,13 @@ const rules = ref<any>({
 const scripts = ref<Runtime.NodeScripts[]>([]);
 const em = defineEmits(['close']);
 
+const hasPnpm = computed(() => {
+    if (runtime.version == undefined) {
+        return false;
+    }
+    return parseFloat(runtime.version) > 18;
+});
+
 const imageSources = [
     {
         label: i18n.global.t('runtime.default'),
@@ -289,7 +305,7 @@ watch(
 watch(
     () => runtime.name,
     (newVal) => {
-        if (newVal) {
+        if (newVal && mode.value == 'create') {
             runtime.params['CONTAINER_NAME'] = newVal;
         }
     },
@@ -363,6 +379,9 @@ const changeApp = (appID: number) => {
 
 const changeVersion = () => {
     loading.value = true;
+    if (runtime.params['PACKAGE_MANAGER'] == 'pnpm' && !hasPnpm.value) {
+        runtime.params['PACKAGE_MANAGER'] = 'npm';
+    }
     GetAppDetail(runtime.appID, runtime.version, 'runtime')
         .then((res) => {
             runtime.appDetailID = res.data.id;
@@ -463,7 +482,7 @@ const getRuntime = async (id: number) => {
     } catch (error) {}
 };
 
-const acceptParams = async (props: OperateRrops) => {
+const acceptParams = async (props: OperateProps) => {
     mode.value = props.mode;
     scripts.value = [];
     if (props.mode === 'create') {
